@@ -1,14 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface InputFormProps {
-  onRun: (params: { successRate: number; numSequences: number; seed?: number }) => void;
+  onRun: (params: { successRate: number; numSequences: number; seed?: number; isComparison?: boolean }) => void;
+  onCompare: (params: { run1: any; run2: any }) => void;
+  isComparisonMode: boolean;
+  onToggleComparisonMode: () => void;
+  animationSpeed: number;
+  onAnimationSpeedChange: (speed: number) => void;
+  isAnimating: boolean;
+  onToggleAnimation: () => void;
 }
 
-const InputForm: React.FC<InputFormProps> = ({ onRun }) => {
+const InputForm: React.FC<InputFormProps> = ({ 
+  onRun, 
+  onCompare, 
+  isComparisonMode, 
+  onToggleComparisonMode,
+  animationSpeed,
+  onAnimationSpeedChange,
+  isAnimating,
+  onToggleAnimation
+}) => {
   const [successRate, setSuccessRate] = useState(0.5);
   const [numSequences, setNumSequences] = useState(10000);
   const [seed, setSeed] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  
+  // Comparison mode states
+  const [comparisonRun1, setComparisonRun1] = useState({ successRate: 0.3, numSequences: 10000, seed: '' });
+  const [comparisonRun2, setComparisonRun2] = useState({ successRate: 0.7, numSequences: 10000, seed: '' });
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'Enter':
+            e.preventDefault();
+            handleSubmit(e as any);
+            break;
+          case 'c':
+            e.preventDefault();
+            onToggleComparisonMode();
+            break;
+          case 'a':
+            e.preventDefault();
+            onToggleAnimation();
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [onToggleComparisonMode, onToggleAnimation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,127 +70,283 @@ const InputForm: React.FC<InputFormProps> = ({ onRun }) => {
       successRate,
       numSequences,
       seed: seed ? Number(seed) : undefined,
+      isComparison: isComparisonMode
     });
   };
 
-  // Slider styling (can be moved to CSS file)
-  const sliderStyle: React.CSSProperties = {
-    width: '100%',
-    margin: '0.5rem 0',
-    accentColor: '#646cff',
-    height: 36,
-    background: 'transparent',
-    display: 'block',
+  const handleCompare = () => {
+    onCompare({
+      run1: { ...comparisonRun1, seed: comparisonRun1.seed ? Number(comparisonRun1.seed) : undefined },
+      run2: { ...comparisonRun2, seed: comparisonRun2.seed ? Number(comparisonRun2.seed) : undefined }
+    });
   };
 
-  // Input and label styling for consistency
+  // Shared styles
+  const cardStyle: React.CSSProperties = {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 24,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+    color: 'white',
+    position: 'relative',
+    overflow: 'hidden'
+  };
+
+  const inputGroupStyle: React.CSSProperties = {
+    marginBottom: 20,
+    position: 'relative'
+  };
+
   const labelStyle: React.CSSProperties = {
     display: 'block',
-    fontWeight: 500,
+    fontWeight: 600,
     marginBottom: 8,
-    color: '#222',
+    fontSize: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
   };
-  const valueStyle: React.CSSProperties = {
-    color: '#646cff',
+
+  const valueDisplayStyle: React.CSSProperties = {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    background: 'rgba(255,255,255,0.2)',
+    padding: '4px 12px',
+    borderRadius: 20,
+    fontSize: 14,
     fontWeight: 700,
+    backdropFilter: 'blur(10px)'
   };
-  const inputBoxStyle: React.CSSProperties = {
+
+  const sliderStyle: React.CSSProperties = {
     width: '100%',
-    height: 36,
-    padding: '0 12px',
-    borderRadius: 6,
-    border: '1px solid #ccc',
-    fontSize: 16,
-    color: '#222',
-    background: '#fff',
-    boxSizing: 'border-box',
-    margin: 0,
-    display: 'block',
+    height: 8,
+    borderRadius: 4,
+    background: 'rgba(255,255,255,0.2)',
+    outline: 'none',
+    WebkitAppearance: 'none',
+    appearance: 'none',
+    cursor: 'pointer'
   };
-  const formBoxStyle: React.CSSProperties = {
-    marginBottom: '2rem',
-    maxWidth: 400,
-    margin: '0 auto',
-    background: '#fff',
-    borderRadius: 12,
-    boxShadow: '0 2px 12px #0001',
-    padding: 24,
-    color: '#222',
-  };
+
   const buttonStyle: React.CSSProperties = {
     width: '100%',
-    height: 44,
-    padding: 0,
-    borderRadius: 8,
-    background: '#646cff',
-    color: '#fff',
-    fontWeight: 600,
-    fontSize: 18,
+    padding: 16,
+    borderRadius: 12,
     border: 'none',
+    background: 'rgba(255,255,255,0.2)',
+    color: 'white',
+    fontWeight: 700,
+    fontSize: 16,
     cursor: 'pointer',
-    boxShadow: '0 1px 4px #0001',
-    marginTop: 8,
-    marginBottom: 0,
-    display: 'block',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease',
+    textTransform: 'uppercase',
+    letterSpacing: 1
+  };
+
+  const toggleStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+    padding: 12,
+    background: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    cursor: 'pointer'
   };
 
   return (
-    <form onSubmit={handleSubmit} style={formBoxStyle}>
-      <div style={{ marginBottom: 24 }}>
-        <label style={labelStyle}>
-          Success Rate: <span style={valueStyle}>{successRate.toFixed(2)}</span>
-        </label>
-        <input
-          type="range"
-          min={0.1}
-          max={0.9}
-          step={0.01}
-          value={successRate}
-          onChange={e => setSuccessRate(Number(e.target.value))}
-          style={sliderStyle}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#888' }}>
-          <span>0.1</span>
-          <span>0.5</span>
-          <span>0.9</span>
+    <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 20px' }}>
+      {/* Controls Panel */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Experiment Controls</h2>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button 
+              onClick={onToggleComparisonMode}
+              style={{ ...buttonStyle, width: 'auto', padding: '8px 16px', fontSize: 12 }}
+            >
+              {isComparisonMode ? 'Single Mode' : 'Compare Mode'}
+            </button>
+            <button 
+              onClick={onToggleAnimation}
+              style={{ ...buttonStyle, width: 'auto', padding: '8px 16px', fontSize: 12 }}
+            >
+              {isAnimating ? 'Stop' : 'Animate'}
+            </button>
+          </div>
+        </div>
+
+        {/* Animation Speed Control */}
+        <div style={inputGroupStyle}>
+          <label style={labelStyle}>
+            Animation Speed
+            <span style={valueDisplayStyle}>{animationSpeed}x</span>
+          </label>
+          <input
+            type="range"
+            min={0.1}
+            max={5}
+            step={0.1}
+            value={animationSpeed}
+            onChange={e => onAnimationSpeedChange(Number(e.target.value))}
+            style={sliderStyle}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, opacity: 0.8, marginTop: 4 }}>
+            <span>0.1x</span>
+            <span>1x</span>
+            <span>5x</span>
+          </div>
+        </div>
+
+        {/* Keyboard Shortcuts Help */}
+        <div style={{ fontSize: 12, opacity: 0.8, marginTop: 16 }}>
+          <strong>Shortcuts:</strong> Ctrl+Enter (Run) | Ctrl+C (Compare) | Ctrl+A (Animate)
         </div>
       </div>
-      <div style={{ marginBottom: 24 }}>
-        <label style={labelStyle}>
-          Number of Sequences: <span style={valueStyle}>{numSequences}</span>
-        </label>
-        <input
-          type="range"
-          min={100}
-          max={100000}
-          step={100}
-          value={numSequences}
-          onChange={e => setNumSequences(Number(e.target.value))}
-          style={sliderStyle}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#888' }}>
-          <span>100</span>
-          <span>50,000</span>
-          <span>100,000</span>
+
+      {/* Main Experiment Form */}
+      <div style={cardStyle}>
+        <h3 style={{ margin: '0 0 20px 0', fontSize: 20, fontWeight: 600 }}>
+          {isComparisonMode ? 'Run 1 Settings' : 'Experiment Settings'}
+        </h3>
+        
+        <form onSubmit={handleSubmit}>
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>
+              Success Rate
+              <span style={valueDisplayStyle}>{successRate.toFixed(2)}</span>
+            </label>
+            <input
+              type="range"
+              min={0.1}
+              max={0.9}
+              step={0.01}
+              value={successRate}
+              onChange={e => setSuccessRate(Number(e.target.value))}
+              style={sliderStyle}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, opacity: 0.8, marginTop: 4 }}>
+              <span>0.1</span>
+              <span>0.5</span>
+              <span>0.9</span>
+            </div>
+          </div>
+
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>
+              Number of Sequences
+              <span style={valueDisplayStyle}>{numSequences.toLocaleString()}</span>
+            </label>
+            <input
+              type="range"
+              min={100}
+              max={100000}
+              step={100}
+              value={numSequences}
+              onChange={e => setNumSequences(Number(e.target.value))}
+              style={sliderStyle}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, opacity: 0.8, marginTop: 4 }}>
+              <span>100</span>
+              <span>50K</span>
+              <span>100K</span>
+            </div>
+          </div>
+
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>Optional Seed</label>
+            <input
+              type="number"
+              value={seed}
+              onChange={e => setSeed(e.target.value)}
+              placeholder="Leave empty for random"
+              style={{
+                width: '100%',
+                padding: 12,
+                borderRadius: 8,
+                border: 'none',
+                background: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                fontSize: 16,
+                backdropFilter: 'blur(10px)'
+              }}
+            />
+          </div>
+
+          {error && <div style={{ color: '#ff6b6b', marginBottom: 16, fontWeight: 600 }}>{error}</div>}
+          
+          <button type="submit" style={buttonStyle}>
+            Run Analysis
+          </button>
+        </form>
+      </div>
+
+      {/* Comparison Mode - Run 2 */}
+      {isComparisonMode && (
+        <div style={cardStyle}>
+          <h3 style={{ margin: '0 0 20px 0', fontSize: 20, fontWeight: 600 }}>Run 2 Settings</h3>
+          
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>
+              Success Rate
+              <span style={valueDisplayStyle}>{comparisonRun2.successRate.toFixed(2)}</span>
+            </label>
+            <input
+              type="range"
+              min={0.1}
+              max={0.9}
+              step={0.01}
+              value={comparisonRun2.successRate}
+              onChange={e => setComparisonRun2({...comparisonRun2, successRate: Number(e.target.value)})}
+              style={sliderStyle}
+            />
+          </div>
+
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>
+              Number of Sequences
+              <span style={valueDisplayStyle}>{comparisonRun2.numSequences.toLocaleString()}</span>
+            </label>
+            <input
+              type="range"
+              min={100}
+              max={100000}
+              step={100}
+              value={comparisonRun2.numSequences}
+              onChange={e => setComparisonRun2({...comparisonRun2, numSequences: Number(e.target.value)})}
+              style={sliderStyle}
+            />
+          </div>
+
+          <div style={inputGroupStyle}>
+            <label style={labelStyle}>Optional Seed</label>
+            <input
+              type="number"
+              value={comparisonRun2.seed}
+              onChange={e => setComparisonRun2({...comparisonRun2, seed: e.target.value})}
+              placeholder="Leave empty for random"
+              style={{
+                width: '100%',
+                padding: 12,
+                borderRadius: 8,
+                border: 'none',
+                background: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                fontSize: 16,
+                backdropFilter: 'blur(10px)'
+              }}
+            />
+          </div>
+
+          <button onClick={handleCompare} style={buttonStyle}>
+            Run Comparison
+          </button>
         </div>
-      </div>
-      <div style={{ marginBottom: 24 }}>
-        <label style={labelStyle}>
-          Optional Seed:
-        </label>
-        <input
-          type="number"
-          value={seed}
-          onChange={e => setSeed(e.target.value)}
-          placeholder="(optional)"
-          style={inputBoxStyle}
-        />
-      </div>
-      {error && <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>}
-      <button type="submit" style={buttonStyle}>
-        Run Analysis
-      </button>
-    </form>
+      )}
+    </div>
   );
 };
 
