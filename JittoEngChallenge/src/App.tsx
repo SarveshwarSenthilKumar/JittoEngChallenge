@@ -49,31 +49,65 @@ function App() {
   const callBackend = async (params: ExperimentParams): Promise<{ snapshots: Snapshot[]; final: Snapshot }> => {
     const { successRate, numSequences, seed } = params;
     
-    // Replace this URL with your actual API Gateway endpoint
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://your-api-gateway-url.execute-api.region.amazonaws.com/prod/analyze';
+    // Get API URL from environment variable
+    const apiUrl = import.meta.env.VITE_API_URL;
     
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        success_rate: successRate,
-        num_sequences: numSequences,
-        seed: seed
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    if (!apiUrl) {
+      throw new Error('API URL not configured. Please check your .env file.');
     }
 
-    const data = await response.json();
-    return {
-      snapshots: data.snapshots || [],
-      final: data.final
-    };
+    console.log('Making API call to:', apiUrl);
+    console.log('Request payload:', { success_rate: successRate, num_sequences: numSequences, seed });
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          success_rate: successRate,
+          num_sequences: numSequences,
+          seed: seed
+        }),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+          // If we can't parse the error response, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      return {
+        snapshots: data.snapshots || [],
+        final: data.final
+      };
+    } catch (error) {
+      console.error('API call failed:', error);
+      
+      // Provide more specific error messages
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to the API. Please check your internet connection and try again.');
+      } else if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('An unexpected error occurred while calling the API.');
+      }
+    }
   };
 
   // Handle single experiment run
