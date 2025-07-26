@@ -45,56 +45,35 @@ function App() {
     timestamp: Date;
   }[]>([]);
 
-  // Simulate backend call with progressive updates
-  const simulateBackendCall = async (params: ExperimentParams): Promise<{ snapshots: Snapshot[]; final: Snapshot }> => {
+  // Real backend call to AWS Lambda
+  const callBackend = async (params: ExperimentParams): Promise<{ snapshots: Snapshot[]; final: Snapshot }> => {
     const { successRate, numSequences, seed } = params;
     
-    // Set seed if provided
-    if (seed !== undefined) {
-      // In real implementation, this would be passed to the backend
-      console.log('Using seed:', seed);
+    // Replace this URL with your actual API Gateway endpoint
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://your-api-gateway-url.execute-api.region.amazonaws.com/prod/analyze';
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        success_rate: successRate,
+        num_sequences: numSequences,
+        seed: seed
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
 
-    // Simulate progressive snapshots
-    const snapshots: Snapshot[] = [];
-    const snapshotInterval = Math.max(1, Math.floor(numSequences / 10));
-    
-    // Simulate the streak analysis
-    let streakTotal = 0;
-    let streakSuccess = 0;
-    
-    for (let seqNum = 1; seqNum <= numSequences; seqNum++) {
-      // Simulate 100 binary outcomes for this sequence
-      const sequence = Array.from({ length: 100 }, () => 
-        Math.random() < successRate ? 1 : 0
-      );
-      
-      // Find non-overlapping 2-success streaks
-      for (let i = 0; i < 98; i++) {
-        if (sequence[i] === 1 && sequence[i + 1] === 1) {
-          if (i + 2 < 100) {
-            streakTotal++;
-            if (sequence[i + 2] === 1) {
-              streakSuccess++;
-            }
-          }
-          i += 2; // Skip overlapping
-        }
-      }
-      
-      // Take snapshot at intervals
-      if (seqNum % snapshotInterval === 0 || seqNum === numSequences) {
-        const estimate = streakTotal > 0 ? streakSuccess / streakTotal : 0;
-        snapshots.push({
-          sequences: seqNum,
-          estimate,
-          input_rate: successRate,
-          difference: estimate - successRate
-        });
-      }
-    }
-    
-    return { snapshots, final: snapshots[snapshots.length - 1] };
+    const data = await response.json();
+    return {
+      snapshots: data.snapshots || [],
+      final: data.final
+    };
   };
 
   // Handle single experiment run
@@ -106,7 +85,7 @@ function App() {
     setIsAnimating(false);
     
     try {
-      const results = await simulateBackendCall(params);
+      const results = await callBackend(params);
       setSnapshots(results.snapshots);
       setFinal(results.final);
       
@@ -119,7 +98,8 @@ function App() {
       
     } catch (error) {
       console.error('Experiment failed:', error);
-      // In real app, show error message to user
+      // Show error to user
+      alert(`Experiment failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -132,8 +112,8 @@ function App() {
     
     try {
       const [results1, results2] = await Promise.all([
-        simulateBackendCall(params.run1),
-        simulateBackendCall(params.run2)
+        callBackend(params.run1),
+        callBackend(params.run2)
       ]);
       
       setComparisonResults({
@@ -148,6 +128,7 @@ function App() {
       
     } catch (error) {
       console.error('Comparison failed:', error);
+      alert(`Comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
