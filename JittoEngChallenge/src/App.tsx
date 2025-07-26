@@ -208,48 +208,186 @@ Total Sequences: ${final.sequences.toLocaleString()}`;
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(0,0,0,0.8)',
+      background: 'rgba(0,0,0,0.85)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 1000
+      zIndex: 1000,
+      backdropFilter: 'blur(8px)'
     }}>
       <div style={{
-        background: 'white',
-        padding: 40,
-        borderRadius: 16,
-        maxWidth: 500,
-        textAlign: 'center'
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+        padding: '48px 40px',
+        borderRadius: 20,
+        maxWidth: 600,
+        width: '90%',
+        textAlign: 'center',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        border: '1px solid rgba(255,255,255,0.2)',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <h2 style={{ marginBottom: 20 }}>Welcome to "Are Streaks Real?"</h2>
-        <p style={{ marginBottom: 16, lineHeight: 1.6 }}>
-          This experiment investigates whether consecutive successes actually predict future success.
-          Set your parameters and run simulations to see if streaks are real or just statistical illusions.
-        </p>
-        <div style={{ textAlign: 'left', marginBottom: 24 }}>
-          <h4>Key Features:</h4>
-          <ul style={{ lineHeight: 1.8 }}>
-            <li>🎯 Adjustable success rates (0.1-0.9)</li>
-            <li>📊 Live visualization with multiple chart types</li>
-            <li>⚡ Real-time animation controls</li>
-            <li>🔬 Side-by-side comparison mode</li>
-            <li>⌨️ Keyboard shortcuts (Ctrl+Enter, Ctrl+C, Ctrl+A)</li>
-          </ul>
+        {/* Decorative background elements */}
+        <div style={{
+          position: 'absolute',
+          top: -50,
+          right: -50,
+          width: 100,
+          height: 100,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '50%',
+          opacity: 0.1
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: -30,
+          left: -30,
+          width: 80,
+          height: 80,
+          background: 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
+          borderRadius: '50%',
+          opacity: 0.1
+        }}></div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2 style={{ 
+            marginBottom: 24, 
+            fontSize: '2.5rem',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginTop: 0
+          }}>
+            Welcome to "Are Streaks Real?"
+          </h2>
+          
+          <p style={{ 
+            marginBottom: 32, 
+            lineHeight: 1.7,
+            fontSize: '1.1rem',
+            color: '#2c3e50',
+            maxWidth: 500,
+            marginLeft: 'auto',
+            marginRight: 'auto'
+          }}>
+            This experiment investigates whether consecutive successes actually predict future success.
+            Set your parameters and run simulations to see if streaks are real or just statistical illusions.
+          </p>
+          
+          <div style={{ 
+            textAlign: 'left', 
+            marginBottom: 32,
+            background: 'rgba(102, 126, 234, 0.05)',
+            padding: 24,
+            borderRadius: 12,
+            border: '1px solid rgba(102, 126, 234, 0.1)'
+          }}>
+            <h4 style={{ 
+              margin: '0 0 16px 0',
+              color: '#667eea',
+              fontSize: '1.2rem',
+              fontWeight: 600
+            }}>
+              🚀 Key Features:
+            </h4>
+            <ul style={{ 
+              lineHeight: 2,
+              margin: 0,
+              paddingLeft: 20,
+              color: '#2c3e50'
+            }}>
+              <li style={{ marginBottom: 8 }}>
+                <strong>🎯 Adjustable success rates</strong> (0.1-0.9) with intuitive sliders
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>📊 Live visualization</strong> with multiple chart types and real-time updates
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>⚡ Animation controls</strong> for step-through analysis with speed adjustment
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>🔬 Side-by-side comparison</strong> mode to compare different scenarios
+              </li>
+              <li style={{ marginBottom: 8 }}>
+                <strong>⌨️ Keyboard shortcuts</strong> for power users (Ctrl+Enter, Ctrl+C, Ctrl+A)
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <strong>📱 Mobile optimized</strong> responsive design for all devices
+              </li>
+            </ul>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            gap: 16,
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+          }}>
+            <button 
+              onClick={() => setShowTutorial(false)}
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                border: 'none',
+                padding: '16px 32px',
+                borderRadius: 12,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                transition: 'all 0.3s ease',
+                minWidth: 160
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+              }}
+            >
+              🎯 Get Started
+            </button>
+            
+            <button 
+              onClick={() => setShowTutorial(false)}
+              style={{
+                background: 'transparent',
+                color: '#667eea',
+                border: '2px solid #667eea',
+                padding: '14px 24px',
+                borderRadius: 12,
+                fontSize: '1rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                minWidth: 120
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#667eea';
+                e.currentTarget.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = '#667eea';
+              }}
+            >
+              Skip Tutorial
+            </button>
+          </div>
+
+          <div style={{
+            marginTop: 24,
+            fontSize: '0.9rem',
+            color: '#6c757d',
+            fontStyle: 'italic'
+          }}>
+            💡 Tip: You can always access this tutorial from the help menu
+          </div>
         </div>
-        <button 
-          onClick={() => setShowTutorial(false)}
-          style={{
-            background: '#667eea',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: 8,
-            fontSize: 16,
-            cursor: 'pointer'
-          }}
-        >
-          Get Started
-        </button>
       </div>
     </div>
   );
