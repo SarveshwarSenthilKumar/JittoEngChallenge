@@ -22,6 +22,10 @@ interface ExperimentParams {
 function App() {
   // Main state
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
+  
+  // Display API URL for debugging
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log('API URL from environment:', apiUrl);
   const [final, setFinal] = useState<Snapshot | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   
@@ -51,6 +55,7 @@ function App() {
     
     // Get API URL from environment variable
     const apiUrl = import.meta.env.VITE_API_URL;
+    console.log('API URL from environment:', apiUrl);
     
     if (!apiUrl) {
       throw new Error('API URL not configured. Please check your .env file.');
@@ -412,6 +417,9 @@ Total Sequences: ${final.sequences.toLocaleString()}`;
       {showTutorial && <Tutorial />}
       
       <Header />
+      <div style={{ padding: '10px', background: '#f0f0f0', textAlign: 'center' }}>
+        <small>API URL: {apiUrl || 'Not configured'}</small>
+      </div>
       
       <main style={{ minHeight: '60vh', padding: '40px 0' }}>
         <InputForm 
