@@ -67,3 +67,7 @@ export default tseslint.config([
   },
 ])
 ```
+
+# Project Information
+
+This project was started by me in order to try to complete the Jitto Full-Stack Engineering Challenge, however while I learned React and AWS and deployment mechanics, unfortunately the finished product as of August is not satisfactory therefore I did not submit it.
